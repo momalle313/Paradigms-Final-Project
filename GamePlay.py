@@ -23,7 +23,6 @@ class gameSpace(object):
 		self.size = self.width, self.height = screenWidth, screenHeight
 		self.white = 255,255,255
 		self.screen = pygame.display.set_mode(self.size)
-		self.lost_flag = 0
 
 		# Various screen fonts and labels
 		self.byeFont = pygame.font.SysFont("freeserif", 100)
@@ -33,7 +32,7 @@ class gameSpace(object):
 		self.bye = self.byeFont.render("Goodbye!", 1, (0,0,0))
 		self.lost = self.winFont.render("Game Server Connection Lost.", 1, (0,0,0))
 
-		# Setup game mode and difficulty
+		# Setup game mode, difficulty, chosen sprite images
 		self.player_num = 0
 		self.connected = 0
 		self.setup = Setup()
@@ -45,7 +44,7 @@ class gameSpace(object):
 		if self.mode == 0:
 			self.goodbye()
 
-		# If player want to play computer, set that up
+		# If player want to play computer, set 1 player up
 		elif self.mode == 1:
 			self.player_num = 1
 			self.connected = 1
@@ -55,21 +54,23 @@ class gameSpace(object):
 			spriteGroup.add(self.computer)
 			self.ball = Ball(self.player, self.diff, self.ball_img, self.computer)
 
-		# If mode 2 selected, set a variable for other score
+		# If mode 2 selected, set a variable for other player
 		elif self.mode == 2:
 
-			# Own player inits
-			self.other_score = 0
+			# Your player inits
 			self.player = Player(self.player_num, self.player_img)
 			self.ball = Ball(self.player, self.diff, self.ball_img)
 			spriteGroup.add(self.player)
 
 			# Initialize other player attributes
+			self.other_score = 0
 			self.barWidth = 30
 			self.barHeight = 80
 			self.other_img = pygame.image.load(self.player_img)
 			self.other_img = pygame.transform.scale(self.other_img, (self.barWidth, self.barHeight))
 			self.other_rect = self.other_img.get_rect()
+
+			# place off screen for the time being
 			self.other_rect.x = -50
 			self.other_rect.y = 900
 
@@ -78,60 +79,65 @@ class gameSpace(object):
 
 		# If playing online but P2 hasn't connected, wait
 		if self.connected == 0:
+			self.screen.fill(self.white)
 			self.wait_screen()
 
-		# Set white background
-		self.screen.fill(self.white)
-
-		# check for system exit
-		event = pygame.event.poll()
-		if event.type == pygame.QUIT:
-			if self.mode == 1:
-				sys.exit()
-			elif self.mode == 2:
-				os._exit()
-
-		# Draw everything for mode 1
-		if self.mode == 1:
-			self.player.keyHandler()
-			self.ball.move()
-			self.ball.collision(spriteGroup)
-			self.ball.draw()
-			self.player.draw()
-			self.player.goal()
-			self.computer.move()
-			self.computer.draw()
-			self.computer.goal()
-
-		# Draw everything for mode 2
+		# else, do game loop
 		else:
-			self.player.keyHandler()
-			self.ball.move()
-			self.ball.collision(spriteGroup)
-			self.ball.draw()
-			self.player.draw()
-			self.player.goal()
 
-			# Draw other player, blit other score
-			screen.blit(self.other_img, self.other_rect)
-			scoreBlit = self.scoreKeeper.render(self.other_score, 1, (0,0,0))
+			# Set white background for pong math
+			self.screen.fill(self.white)
 
-			# Blit score in proper place
-			if self.player_num == 2:
-				screen.blit(scoreBlit, (32, 16))
+			# check for system exit
+			event = pygame.event.poll()
+			if event.type == pygame.QUIT:
+				if self.mode == 1:
+					sys.exit()
+				elif self.mode == 2:
+					os._exit()
+
+			# Draw everything for mode 1
+			if self.mode == 1:
+				self.player.keyHandler()
+				self.ball.move()
+				self.ball.collision(spriteGroup)
+				self.ball.draw()
+				self.player.draw()
+				self.player.goal()
+				self.computer.move()
+				self.computer.draw()
+				self.computer.goal()
+
+			# Draw everything for mode 2
 			else:
-				screen.blit(scoreBlit, (968, 16))
+				self.player.keyHandler()
+				self.ball.move()
+				self.ball.collision(spriteGroup)
+				self.ball.draw()
+				self.player.draw()
+				self.player.goal()
 
-			# Check if other player won
-			if self.game_over():
-				self.winner()
+				# Draw other player, blit other score
+				screen.blit(self.other_img, self.other_rect)
+				scoreBlit = self.scoreKeeper.render(self.other_score, 1, (0,0,0))
 
-		# Display all blits
-		pygame.display.flip()
+				# Blit score in proper place
+				if self.player_num == 2:
+					screen.blit(scoreBlit, (32, 16))
+				else:
+					screen.blit(scoreBlit, (968, 16))
+
+				# Check if other player won
+				if self.game_over():
+					self.winner()
+
+			# Display all blits
+			pygame.display.flip()
 
 	# Wait Screen
 	def wait_screen(self):
 		screen.blit(self.wait, (150, 400))
+		pygame.display.flip()
 
 	# Function receives other player position
 	def update(self, data):
@@ -144,42 +150,37 @@ class gameSpace(object):
 
                 # If data is P2 message, set to P2
                 elif data == "2":
-                    	print "Caught 2"
                         self.set_player(2)
 
                 # Begin game if player 2 has connected
                 elif data == "3":
-                    	print "Caught 3"
                         self.connected()
 
+		# Otherwise, parse other player data
 		else:
-			print "Not caught"
-
 			info = data.split()
 			self.other_rect.x = int(info[0])
 			self.other_rect.y = int(info[1])
 			self.other_score = info[2]
 			self.ball.set_pos(int(info[3]), int(info[4]), float(info[5]))
 
-		self.play()
-
-
 	# Function sets player number, cannot start mode 2 without this
 	def set_player(self, num):
-		print "In set_player function"
+
 		self.player_num = num
+
+		# If player_num is 2, begin game
 		if self.player_num == 2:
 			self.connected = 1
+
+		# Set x position according to player number
 		self.player.set_pos(self.player_num)
-		self.play()
 
 	# Indicates player 2 is connected
 	def connected(self):
-		print "In connected function"
 		self.connected = 1
-		self.play()
 
-	# Function returns current player position
+	# Function returns current player position to send
 	def player_pos(self):
 		return self.ball.get_full_pos()
 
@@ -204,7 +205,7 @@ class gameSpace(object):
 			else:
 				return 0
 
-	# function displays lost connection screen
+	# function displays winner screen
 	def winner(self):
 
 		# Winner variable
@@ -227,6 +228,8 @@ class gameSpace(object):
 		self.screen.fill(self.white)
 		self.win = self.winFont.render("Player " + str(winner) + " won the game!", 1, (0,0,0))
 		screen.blit(self.win, (250, 300))
+
+		# Display for 3 seconds then leave
 		pygame.display.flip()
 		time.sleep(3)
 		self.goodbye()
@@ -234,20 +237,12 @@ class gameSpace(object):
 	# function displays lost connection screen
 	def connection_lost(self):
 
-		# Lost conn flag
-		self.lost_flag = 1
-
 		# Lost connection and goodbye
 		self.screen.fill(self.white)
 		screen.blit(self.lost, (200, 300))
 		pygame.display.flip()
 		time.sleep(3)
-
-		self.screen.fill(self.white)
-		screen.blit(self.bye, (300, 300))
-		pygame.display.flip()
-		time.sleep(3)
-		os._exit(1)
+		self.goodbye()
 
 	# Screen say good bye as you exit
 	def goodbye(self):
@@ -256,7 +251,7 @@ class gameSpace(object):
 		screen.blit(self.bye, (300, 300))
 		pygame.display.flip()
 		time.sleep(3)
-		sys.exit()
+		os._exit()
 
 # Player Class
 class Player(pygame.sprite.Sprite):
@@ -287,7 +282,7 @@ class Player(pygame.sprite.Sprite):
 		self.score = 0
 		self.scoreKeeper = pygame.font.SysFont("freeserif", 25)
 
-	# Set x position after the fact
+	# Set x position after the fact (if you don't know what player you are)
 	def set_pos(self, player_num):
 		if player_num == 1:
 			self.rect.x = 100

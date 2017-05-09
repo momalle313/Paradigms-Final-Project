@@ -33,14 +33,13 @@ class DataConnection(Protocol):
 		# Increment player number
 		player_num += 1
 
-		# Check if too many players
+		# Check if too many players, if so, drop connection
 		if player_num > 2:
 			self.transport.write("Already two players: Disconnecting")
 			player_num -= 1
 			self.transport.loseConnection()
-			return
 
-		# Add self to connection list
+		# Add self to connection list, tell client plauer_num
 		connection_list.append(self)
 		print "Player " + str(player_num) + " Connected"
 		self.player = player_num
@@ -81,7 +80,7 @@ class DataConnection(Protocol):
 		print "Connection to Player " + str(self.player) + " was lost:"
 		print str(reason)
 
-		# Check who left, send appropriate messages
+		# Check who left, change list appropriately
 		if self.player == 1:
 			connection_list.pop(0)
 		elif self.player == 2:
@@ -107,6 +106,7 @@ class DataFactory(Factory):
 
 if __name__ == "__main__":
 
-	# Init facrory and listen for Players to connect
+	# Init facrory and listen for Players/clients to connect
 	reactor.listenTCP(PORT, DataFactory())
 	reactor.run()
+

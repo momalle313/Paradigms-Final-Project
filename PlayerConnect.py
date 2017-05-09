@@ -20,10 +20,9 @@ class DataConnection(Protocol):
 		self.gs = gs
 		self.connected = 0
 
-	# Set connection variable to true, print to terminal
+	# Print to terminal, get current position, and send to server
 	def connectionMade(self):
 
-		self.connected = 1
 		print "Connected to Game Server"
 		data = self.gs.player_pos()
 		self.transport.write(data)
@@ -31,13 +30,14 @@ class DataConnection(Protocol):
 	# Determine what to do with received data
 	def dataReceived(self, data):
 
-		# Update data
+		# Clean data and sent to gameSpace update
 		data = data.strip()
 		self.gs.update(data)
 
 	# If connection is lost, display connection lost screen
 	def connectionLost(self, reason):
 
+		# State reaon for loss, initiate lost connection screen
 		print "Connection to game server was lost:"
 		print str(reason)
 		self.gs.connection_lost()
