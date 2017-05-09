@@ -9,7 +9,8 @@ Tutorial
 
 1 player: run the command:
 	python main.py
-The title screen will pop up. Select 1 for 1 player. Then choose a difficulty,
+The title screen will pop up. A player can quit the title screen at any time.
+Select 1 for 1 player. Then choose a difficulty,
 1 to 3. Once this is chosen, the game starts. Deflect oncoming balls back at
 your opponent with your sprite. If the ball gets past you, the other player
 scores, and vice versa. First player to 10 wins!
@@ -19,7 +20,8 @@ scores, and vice versa. First player to 10 wins!
 Now any two ash users can connect to the server on Michael's open port,
 40087. To start, run the command:
 	python main.py
-The title screen will pop up. Select 2 for 2 player. Then choose a difficulty,
+The title screen will pop up. A player can quit the title screen at any time.
+Select 2 for 2 player. Then choose a difficulty,
 1 to 3. If you are the second player to join, this is chosen for you.
 Once this is chosen, the game starts. Deflect oncoming balls back at
 your opponent with your sprite. If the ball gets past you, the other player

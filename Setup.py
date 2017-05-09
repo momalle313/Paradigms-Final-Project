@@ -73,7 +73,7 @@ class Setup():
                         if self.mode == 1 or self.mode == 2:
                                 exit = True
                         elif self.mode == 4:
-                                return 0, 0
+                                return 0, 0, 0, 0
 
                         # Display images
                         pygame.display.flip()
@@ -103,7 +103,7 @@ class Setup():
                         if self.diff == 1 or self.diff == 2 or self.diff == 3:
                                 exit = True
                         elif self.diff == 4:
-                                return 0, 0
+                                return 0, 0, 0, 0
 
                         # Display images
                         pygame.display.flip()
@@ -149,4 +149,3 @@ class Setup():
                         return 4
                 else:
                         return 0
-
