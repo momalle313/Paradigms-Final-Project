@@ -1,14 +1,24 @@
 ### Programming Paradigms Final Project ###
 
-from Connections import CommandConnection, CommandFactory
-from Connections import DataConnection, DataFactory
+from twisted.internet.protocol import ClientFactory
+from twisted.internet.protocol import Protocol
+from twisted.internet.defer import DeferredQueue
+from twisted.internet import reactor
+import sys, pygame, math
+import PlayerConnect
+import GamePlay
 
-def start_service():
-	return
 
+# Global Variable
+PORT = 40087		# Utilizes open port
+HOST = "localhost"	# Can only play if on ash
 
 ### Main Execution ###
 
 
 if __name__ == "__main__":
-	start_service()
+
+	# Connect to server, run reactor
+	reactor.connectTCP(HOST, PORT, DataFactory())
+        reactor.run()
+

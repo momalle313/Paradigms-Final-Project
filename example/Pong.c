@@ -175,9 +175,9 @@ int drwfield(char *score1, char *score2, double x){	// This function draws the f
 // This function provides the computer player with location variables for the deflecting bar. The bar does this by 
 // following the vertical motion of the bar at a slower speed. Different difficulties change bar speed and ball speed.
 void comp(double y, double *y2, double rad, int d, int *t){ 
-	if(cos(rad) > 0){										
+	if(cos(rad) > 0){
 		if(d == 1){			// Slow ball with slow following									
-			*t = 3;									
+			*t = 3;
 			if((y > *y2 && sin(rad) > 0) || (y < *y2 && sin(rad) < 0)){
 				*y2 += (*t*sin(rad))/1.4;
 			}

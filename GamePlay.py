@@ -30,34 +30,33 @@ class gameSpace(object):
 			self.player.keyHandler()
 			self.screen.fill(self.white)
 			#self.player.tick()
-			#self.deathStar.tick()
+			#self.deathStar.tick(
 			self.ball.draw()
-			self.screen.blit(self.player.image, self.player.rect)
-			self.screen.blit(self.computer.image, self.computer.rect)
-			#self.screen.blit(self.ball.image, self.ball.rect)
+			self.player.draw()
+			self.player.goal()
+			self.computer.draw()
+			self.computer.goal()
+			self.ball.move()
 			pygame.display.flip()
 
 # Player Class
-class Player(pygame.sprite.Sprite):
-	def __init__(self, gs=None):
-		pygame.sprite.Sprite.__init__(self)
-		self.score = 0 #score
-		self.image = pygame.image.load('images/players/default.png')
-		self.originalImage = self.image
-		self.rect = self.image.get_rect()
-		self.rect.centerx = 300
-		self.rect.centery = 500
-		self.angle = 0
-		self.resize(4)
+class Player():
+	def __init__(self, gs=None):#, newX, newY):
+		self.x = 200 #newX
+		self.y = 300 #newY
+		self.barWidth = 10
+		self.barHeight = 70
+		self.score = 0
+		self.scoreKeeper = pygame.font.SysFont("comicsansms", 14)
 
 	def keyHandler(self):
 		key = pygame.key.get_pressed()
 		mouse = pygame.mouse.get_pressed()
 		mv = 5
 		if key[pygame.K_UP]:
-			self.rect = self.rect.move(0, -mv)
+			self.y -= 20
 		elif key[pygame.K_DOWN]:
-			self.rect = self.rect.move(0, mv)
+			self.y += 20
 
 		if key[pygame.K_ESCAPE]:
 			gs.running = 0
@@ -67,36 +66,34 @@ class Player(pygame.sprite.Sprite):
 		self.image = pygame.transform.scale(self.image, (int(self.size[0]/amnt), int(self.size[1]/amnt)))
 
 	def goal(self):
-		scoreBlit = self.scoreFont.render(str(self.score), 1, (255, 255, 255))
+		scoreBlit = self.scoreKeeper.render(str(self.score), 1, (255, 255, 255))
 		screen.blit(scoreBlit, (32, 16))
 		if self.score == 10:
 			print ("player 1 wins")
 			exit()
-
+	def draw(self):
+		pygame.draw.rect(screen, (0, 0, 0), (self.x, self.y, self.barWidth, self.barHeight))
 
 
 
 # Computer Class
-class Computer:
-	def __init__(self, gs=None):
-		pygame.sprite.Sprite.__init__(self)
-		self.score = 0 #score
-		self.image = pygame.image.load('images/players/default.png')
-		self.originalImage = self.image
-		self.rect = self.image.get_rect()
-		self.rect.centerx = 1100
-		self.rect.centery = 500
-		self.angle = 0
-		self.resize(4)
+class Computer():
+	def __init__(self, gs=None):#, newX, newY):
+		self.x = 800 #newX
+		self.y = 300#newY
+		self.barWidth = 10
+		self.barHeight = 70
+		self.score = 0
+		self.scoreKeeper = pygame.font.SysFont("comicsansms", 14)
 
 	def keyHandler(self):
 		key = pygame.key.get_pressed()
 		mouse = pygame.mouse.get_pressed()
-		mv = 5
 		if key[pygame.K_w]:
-			self.rect = self.rect.move(0, -mv)
-		elif key[pygame.K_s]:
-			self.rect = self.rect.move(0, mv)
+			self.y -= 20
+		if key[pygame.K_s]:
+			self.y += 20
+
 
 		if key[pygame.K_ESCAPE]:
 			gs.running = 0
@@ -106,27 +103,32 @@ class Computer:
 		self.image = pygame.transform.scale(self.image, (int(self.size[0]/amnt), int(self.size[1]/amnt)))
 
 	def goal(self):
-		scoreBlit = self.scoreFont.render(str(self.score), 1, (255, 255, 255))
+		scoreBlit = self.scoreKeeper.render(str(self.score), 1, (255, 255, 255))
 		screen.blit(scoreBlit, (32, 16))
 		if self.score == 10:
 			print ("player 2 wins")
 			exit()
 
+	def draw(self):
+		pygame.draw.rect(screen, (0, 0, 0), (self.x, self.y, self.barWidth, self.barHeight))
+
+	def difficulty(self, level):
+		print("HEllo")
 
 # Setup Class
 #class Setup:
 
 
 # Ball Class
-class Ball:
+class Ball():
 	def __init__(self, gs=None):
 		pygame.sprite.Sprite.__init__(self)
 		#self.image = pygame.image.load('images/balls/yellowPingPongBall.png')
 		#self.originalImage = self.image
 		#self.rect = self.image.get_rect()
-		self.size = 20
+		self.size = 10
 		self.x = 500
-		self.y = 300
+		self.y = 320
 		#self.resize(30)
 		self.Speedx = 4
 		self.Speedy = 4
@@ -146,14 +148,13 @@ class Ball:
 			self.Speedy *= -2
 		elif self.y >= screenHeight-self.size:
 			self.Speedy*= -2
- 
-                if self.x <= 0:
-                        self.__init__()
-                        enemy.score += 1
-                elif self.x >= SCR_WID-self.size:
-                        self.__init__()
-                        self.speed_x = 3
-                        player.score += 1
+			if self.x <= 0:
+				self.__init__()
+				computer.score += 1
+			elif self.x >= screenWidth-self.size:
+				self.__init__()
+				self.speed_x = 3
+				player.score += 1
 
 
 

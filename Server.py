@@ -14,7 +14,7 @@ connection_list = []	# Keeps both connections distinct in list
 			# This way, the server can wait for two connections
 			# from anybody, place them in this list, and be able
 			# to have them communicate rather than only allowing
-			# two specific clients to communicate
+			# specific clients to communicate. Anyone can connect
 
 # Data Connection handlers
 class DataConnection(Protocol):
@@ -28,11 +28,12 @@ class DataConnection(Protocol):
 
 		# Add self to connection list
 		connection_list.append(self)
-		print connection_list
 
-		# Increment player number, check if too many
+		# Increment player number
 		player_num += 1
 		print "Player " + str(player_num) + " Connected"
+
+		# Check if too many players
 		if player_num > 2:
 			self.transport.write("Already two players: Disconnecting")
 			player_num -= 1
@@ -92,10 +93,12 @@ class DataConnection(Protocol):
 # Factory for connection
 class DataFactory(Factory):
 
+	# Build Connect class
 	def __init__(self):
 
 		self.myconn = DataConnection()
 
+	# Returns own connection
 	def buildProtocol(self, addr):
 
 		return self.myconn
@@ -106,7 +109,6 @@ class DataFactory(Factory):
 
 if __name__ == "__main__":
 
-	Data = DataFactory()
-
-	reactor.listenTCP(PORT, Data)
+	# Init facrory and listen for Players to connect
+	reactor.listenTCP(PORT, DataFactory())
 	reactor.run()
