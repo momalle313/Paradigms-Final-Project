@@ -2,7 +2,7 @@
 
 from random import randint
 import sys, pygame
-import math, time
+import math, time, os
 from Setup import Setup
 
 
@@ -213,7 +213,7 @@ class gameSpace(object):
 		screen.blit(self.bye, (300, 300))
 		pygame.display.flip()
 		time.sleep(3)
-		sys.exit()
+		os._exit(1)
 
 	# Screen say good bye as you exit
 	def goodbye(self):
