@@ -17,11 +17,12 @@ class gameSpace(object):
 	# Initializes all necessary variable
 	def __init__(self):
 
-		# Initialize window variables and several labels
+		# Initialize window variables and reactor
 		pygame.init()
 		self.size = self.width, self.height = screenWidth, screenHeight
 		self.white = 255,255,255
 		self.screen = pygame.display.set_mode(self.size)
+		self.lost_flag = 0
 
 		# Various screen fonts and labels
 		self.byeFont = pygame.font.SysFont("freeserif", 100)
@@ -53,6 +54,8 @@ class gameSpace(object):
 
 		# If mode 2 selected, set a variable for other score
 		elif self.mode == 2:
+
+			# Own player inits
 			self.other_score = 0
 			self.player = Player(self.player_num, self.player_img)
 			self.ball = Ball(self.player, self.diff, self.ball_img)
@@ -78,19 +81,22 @@ class gameSpace(object):
 		self.connected = 1
 
 	# Runs one game loop
-	def play(self):
+	def play(self, reactor):
 
 		# If playing online but P2 hasn't connected, wait
 		if self.connected == 0:
-			screen.blit(self.wait, (150, 400))
+			self.wait_screen()
+
+		# Set white background
+		self.screen.fill(self.white)
 
 		# check for system exit
 		event = pygame.event.poll()
 		if event.type == pygame.QUIT:
-			sys.exit()
-
-		# Set white background
-		self.screen.fill(self.white)
+			if self.mode == 1:
+				sys.exit()
+			elif self.mode == 2:
+				reactor.stop()
 
 		# Draw everything for mode 1
 		if self.mode == 1:
@@ -121,12 +127,15 @@ class gameSpace(object):
 				screen.blit(scoreBlit, (968, 16))
 
 			# Check if other player won
-			if self.other_score == 10:
-				print ("other player wins")
+			if self.game_over():
 				self.winner()
 
 		# Display all blits
 		pygame.display.flip()
+
+	# Wait Screen
+	def wait_screen(self):
+		screen.blit(self.wait, (150, 400))
 
 	# Function receives other player position
 	def update_other(self, data):
@@ -190,14 +199,25 @@ class gameSpace(object):
 
 	# function displays lost connection screen
 	def connection_lost(self):
+
+		# Lost conn flag
+		self.lost_flag = 1
+
+		# Lost connection and goodbye
 		self.screen.fill(self.white)
 		screen.blit(self.lost, (200, 300))
 		pygame.display.flip()
 		time.sleep(3)
-		self.goodbye()
+
+		self.screen.fill(self.white)
+		screen.blit(self.bye, (300, 300))
+		pygame.display.flip()
+		time.sleep(3)
+		sys.exit()
 
 	# Screen say good bye as you exit
 	def goodbye(self):
+
 		self.screen.fill(self.white)
 		screen.blit(self.bye, (300, 300))
 		pygame.display.flip()

@@ -49,6 +49,9 @@ class DataConnection(Protocol):
 		elif data == "3":
 			self.gs.connected()
 
+		elif data == "Waiting...":
+			self.gs.wait_screen()
+
 		# If data is position update, send to gs, update other player
 		else:
 			self.gs.update_other(data)

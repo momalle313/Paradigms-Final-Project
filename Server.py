@@ -2,6 +2,7 @@
 
 from twisted.internet.protocol import Factory
 from twisted.internet.protocol import Protocol
+from twisted.internet.defer import DeferredQueue
 from twisted.internet import reactor
 
 
@@ -25,6 +26,9 @@ class DataConnection(Protocol):
 		global connection_list
 		global player_num
 
+		# Queue for incoming data
+		self.queue = DeferredQueue()
+
 		# Increment player number
 		player_num += 1
 
@@ -40,24 +44,37 @@ class DataConnection(Protocol):
 		print "Player " + str(player_num) + " Connected"
 		self.player = player_num
 		self.transport.write(str(player_num))
+		if self.player == 1:
+			self.queue.put("Waiting...")
+			self.queue.get().addCallback(self.forwardData)
+
 		if self.player == 2:
 			connection_list[0].transport.write("3")
 
 	# Handle data received, send to opposite player
 	def dataReceived(self, data):
 
+		# Put data in queue
+		self.queue.put(data)
+		self.queue.get().addCallback(self.forwardData)
+
+	# Begin forwarding process
+	def forwardData(self, data):
+
 		# Check player_num, if less than two, notify player to wait
 		global player_num
 		if player_num < 2:
-			self.transport.write("Other player not connected yet, please wait...")
+			self.transport.write(data)
 
 		# If data is received from player 1, send to player 2
 		elif self.player == 1:
 			connection_list[1].transport.write(data)
+			self.queue.get().addCallback(self.forwardData)
 
 		# If data is received from player 2, send to player 1
 		elif self.player == 2:
 			connection_list[0].transport.write(data)
+			self.queue.get().addCallback(self.forwardData)
 
 	# On loss of connection, name player and explain reason
 	def connectionLost(self, reason):
