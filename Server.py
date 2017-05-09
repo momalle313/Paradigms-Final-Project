@@ -28,6 +28,7 @@ class DataConnection(Protocol):
 
 		# Add self to connection list
 		connection_list.append(self)
+		print connection_list
 
 		# Increment player number, check if too many
 		player_num += 1
@@ -60,9 +61,11 @@ class DataConnection(Protocol):
 		if player_num < 2:
 			self.transport.write("Other player not connected yet, please wait...")
 
-		# Send data received to other client
+		# If data is received from player 1, send to player 2
 		elif self.player == 1:
 			connection_list[1].transport.write(data)
+
+		# If data is received from player 2, send to player 1
 		elif self.player == 2:
 			connection_list[0].transport.write(data)
 
@@ -74,7 +77,8 @@ class DataConnection(Protocol):
 		player_num -= 1
 
 		# State loss and reason
-		print "Connection to Player " + str(self.player) + " was lost"
+		print "Connection to Player " + str(self.player) + " was lost:"
+		print str(reason)
 
 		# Check who left, send appropriate messages
 		if self.player == 1:
@@ -83,7 +87,7 @@ class DataConnection(Protocol):
 			self.player = 1
 			connection_list.pop(1)
 			self.transport.write("Other player left game:\n")
-			self.transport.write("You are now Player 1")
+			self.transport.write("You are Player 1")
 
 # Factory for connection
 class DataFactory(Factory):

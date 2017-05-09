@@ -4,6 +4,7 @@ from twisted.internet.protocol import ClientFactory
 from twisted.internet.protocol import Protocol
 from twisted.internet.defer import DeferredQueue
 from twisted.internet import reactor
+from GamePlay import gameSpace
 
 
 # Global Variables
@@ -13,6 +14,10 @@ PORT = 40087
 # Data Connection
 class DataConnection(Protocol):
 
+	def __init__(self):
+		gs = gameSpace()
+		gs.main()
+
 	def connectionMade(self):
 
 		print "Connected to Game Server"
@@ -20,13 +25,20 @@ class DataConnection(Protocol):
 	def dataReceived(self, data):
 
 		global player_num
-		player_num += 1
 		print data
-		#screen_update(data, player_num)
+		if data == "You are Player 1":
+			self.player = 1
+		elif data == "You are Player 2":
+			self.player = 2
+		else:
+			gs.screen_update(data, self.player)
+			data = gs.get_data()
+			self.transport.write(data)
 
 	def connectionLost(self, reason):
-		print "Connection to game server was lost"
 
+		print "Connection to game server was lost:"
+		print str(reason)
 
 class DataFactory(ClientFactory):
 
