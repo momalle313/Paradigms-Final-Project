@@ -2,7 +2,6 @@
 
 from twisted.internet.protocol import Factory
 from twisted.internet.protocol import Protocol
-#from twisted.internet.defer import DeferredQueue
 from twisted.internet import reactor
 
 
@@ -40,9 +39,9 @@ class DataConnection(Protocol):
 		connection_list.append(self)
 		print "Player " + str(player_num) + " Connected"
 		self.player = player_num
-		self.transport.write("You are Player " + str(player_num))
+		self.transport.write(str(player_num))
 		if self.player == 2:
-			connection_list[0].transport.write("Player 2 has connected")
+			connection_list[0].transport.write("3")
 
 	# Handle data received, send to opposite player
 	def dataReceived(self, data):

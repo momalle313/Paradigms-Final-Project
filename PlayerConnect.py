@@ -2,7 +2,6 @@
 
 from twisted.internet.protocol import ClientFactory
 from twisted.internet.protocol import Protocol
-#from twisted.internet.defer import DeferredQueue
 from twisted.internet import reactor
 from GamePlay import gameSpace
 
@@ -15,9 +14,10 @@ PORT = 40087		# Available port to connect to on localhost
 class DataConnection(Protocol):
 
 	# Initialize gamespace and start main loop
-	def __init__(self):
+	def __init__(self, gs):
 
-		# Variables to pass to game space
+		# GameSpace Variables
+		self.gs = gs
 		self.connected = 0
 		self.player = 0
 
@@ -36,39 +36,39 @@ class DataConnection(Protocol):
 		print data
 
 		# If data is P1 message, set to P1
-		if data == "You are Player 1":
+		if data == "1":
 			self.player = 1
 			self.gs.set_player(self.player)
 
 		# If data is P2 message, set to P2
-		elif data == "You are Player 2":
+		elif data == "2":
 			self.player = 2
 			self.gs.set_player(self.player)
 
 		# Begin game if player 2 has connected
-		elif data == "Player 2 has connected":
+		elif data == "3":
 			self.gs.connected()
 
 		# If data is position update, send to gs, update other player
 		else:
-			self.gs.other_player_pos(data)
+			self.gs.update_other(data)
 			data = self.gs.player_pos()
 			self.transport.write(data)
 
 	# If connection is lost, display connection lost screen
 	def connectionLost(self, reason):
 
-		self.gs.connection_lost()
 		print "Connection to game server was lost:"
 		print str(reason)
+		self.gs.connection_lost()
 
 # Factory for DataConnection
 class DataFactory(ClientFactory):
 
 	# Establish Connection
-	def __init__(self):
+	def __init__(self, gs):
 
-		self.myconn = DataConnection()
+		self.myconn = DataConnection(gs)
 
 	# Build protocol returns own connection
 	def buildProtocol(self, addr):

@@ -108,8 +108,30 @@ class Setup():
                         # Display images
                         pygame.display.flip()
 
+#########################################################
+#							#
+#	Chisom - here's where the menus for		#
+#	player option and ball option will		#
+#	go. My code above is pretty straight-		#
+#	forward, you can copy the premise of it		#
+#							#
+#########################################################
+
+                # Player Option Screen Loop
+                exit = False
+                while not exit:
+			self.player_img = "images/players/default.png"
+			break # Not really
+
+                # Ball Option Screen Loop
+                exit = False
+                while not exit:
+			self.ball_img = "images/balls/soccerBall.png"
+			break # Not really
+
                 # Return appropriate value
-                return self.mode, self.diff
+                return self.mode, self.diff, self.player_img, self.ball_img
+
 
         # Function checks for keystroke, returns it
         def tick(self):
