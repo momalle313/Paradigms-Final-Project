@@ -7,40 +7,85 @@ from twisted.internet import reactor
 
 
 # Global Variables
-player_num = 0
-PORT = 40087
-factory = Factory()
-factory.clients = []
+player_num = 0		# Keeps track of connections, only allows 2
+PORT = 40087		# Open port to run server on
+
+connection_list = []	# Keeps both connections distinct in list
+			# This way, the server can wait for two connections
+			# from anybody, place them in this list, and be able
+			# to have them communicate rather than only allowing
+			# two specific clients to communicate
 
 # Data Connection handlers
 class DataConnection(Protocol):
 
+	# Responses for each player when connection is made
 	def connectionMade(self):
 
+		# Declare globals
+		global connection_list
 		global player_num
-		global factory
 
+		# Add self to connection list
+		connection_list.append(self)
+
+		# Increment player number, check if too many
 		player_num += 1
-		factory.clients.append(self)
-		print
-		print factory.clients
-		print
 		print "Player " + str(player_num) + " Connected"
-		if player_num == 1:
-			self.transport.write("You are Player 1")
-			self.transport.write("Waiting for Player 2 to join...")
-		elif player_num == 2:
-			self.transport.write("You are Player 2")
+		if player_num > 2:
+			self.transport.write("Already two players: Disconnecting")
+			player_num -= 1
+			self.transport.loseConnection()
 
+		# If not too many players, check which player number
+		elif player_num == 1:
+
+			# Set player number, send appropriate messages
+			self.player = 1
+			self.transport.write("You are Player 1\n")
+			self.transport.write("Waiting for Player 2 to join...\n")
+
+		elif player_num == 2:
+
+			# Set player number, send appropriate messages
+			self.player = 2
+			self.transport.write("You are Player 2\n")
+			connection_list[0].transport.write("Player 2 has joined\n")
+
+	# Handle data received, send to opposite player
 	def dataReceived(self, data):
 
-		print data
+		# Check player_num, if less than two, notify player to wait
+		global player_num
+		if player_num < 2:
+			self.transport.write("Other player not connected yet, please wait...")
 
+		# Send data received to other client
+		elif self.player == 1:
+			connection_list[1].transport.write(data)
+		elif self.player == 2:
+			connection_list[0].transport.write(data)
+
+	# On loss of connection, name player and explain reason
 	def connectionLost(self, reason):
 
-		print "Connection to " + str(self) + " lost"
-		print reason
+		# Decrease player number
+		global player_num
+		player_num -= 1
 
+		# State loss and reason
+		print "Connection to Player " + str(self.player) + " was lost"
+
+		# Check who left, send appropriate messages
+		if self.player == 1:
+			connection_list.pop(0)
+		elif self.player == 2:
+			self.player = 1
+			connection_list.pop(1)
+			self.transport.write("Other player left game:\n")
+			self.transport.write("You are now Player 1")
+
+# Factory for connection
 class DataFactory(Factory):
 
 	def __init__(self):

@@ -7,9 +7,8 @@ from twisted.internet import reactor
 
 
 # Global Variables
-player_num = None
+player_num = None	# Keeps track of number
 PORT = 40087
-
 
 # Data Connection
 class DataConnection(Protocol):
@@ -21,15 +20,12 @@ class DataConnection(Protocol):
 	def dataReceived(self, data):
 
 		global player_num
+		player_num += 1
 		print data
-		if data == "You are Player 1":
-			player_num = 1
-		elif data == "You are Player 2":
-			player_num = 2
+		#screen_update(data, player_num)
 
 	def connectionLost(self, reason):
-		print "Connection to game server was lost:"
-		print "\t" + reason
+		print "Connection to game server was lost"
 
 
 class DataFactory(ClientFactory):
