@@ -7,7 +7,7 @@ from twisted.internet import reactor
 
 
 # Global Variables
-player_num = None	# Keeps track of number
+player_num = 0		# Keeps track of number
 PORT = 40087
 
 # Data Connection
