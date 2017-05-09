@@ -25,16 +25,13 @@ if __name__ == "__main__":
 	# Connect to server, run reactor if 2 player game initiated
 	if gs.get_mode() == 2:
 
+		# Begin looping gameloop
+        	lc = LoopingCall(gs.play())
+		lc.start(1/60)
+
 		# Connect to server, run reactor
 		reactor.connectTCP(HOST, PORT, DataFactory(gs))
 		reactor.run()
-
-		# Wait for player_num to be set
-		time.sleep(1)
-
-		# Begin looping gameloop
-        	lc = LoopingCall(gs.play(reactor))
-		lc.start(.01666)
 
 	# If not, run normal gameloop with computer
 	else:

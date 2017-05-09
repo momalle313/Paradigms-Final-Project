@@ -9,6 +9,7 @@ from Setup import Setup
 # Screen Config Global Variables
 screenWidth, screenHeight = 1000, 800
 screen = pygame.display.set_mode((screenWidth, screenHeight))
+spriteGroup = pygame.sprite.Group()
 
 
 # GameSpace Class
@@ -49,7 +50,9 @@ class gameSpace(object):
 			self.player_num = 1
 			self.connected = 1
 			self.player = Player(self.player_num, self.player_img)
+			spriteGroup.add(self.player)
 			self.computer = Computer(self.diff, self.player_img)
+			spriteGroup.add(self.computer)
 			self.ball = Ball(self.player, self.diff, self.ball_img, self.computer)
 
 		# If mode 2 selected, set a variable for other score
@@ -59,6 +62,7 @@ class gameSpace(object):
 			self.other_score = 0
 			self.player = Player(self.player_num, self.player_img)
 			self.ball = Ball(self.player, self.diff, self.ball_img)
+			spriteGroup.add(self.player)
 
 			# Initialize other player attributes
 			self.barWidth = 30
@@ -69,19 +73,8 @@ class gameSpace(object):
 			self.other_rect.x = -50
 			self.other_rect.y = 900
 
-	# Function sets player number, cannot start mode 2 without this
-	def set_player(self, num):
-		self.player_num = num
-		if self.player_num == 2:
-			self.connected = 1
-		self.player.set_pos(self.player_num)
-
-	# Indicates player 2 is connected
-	def connected(self):
-		self.connected = 1
-
 	# Runs one game loop
-	def play(self, reactor):
+	def play(self):
 
 		# If playing online but P2 hasn't connected, wait
 		if self.connected == 0:
@@ -96,12 +89,13 @@ class gameSpace(object):
 			if self.mode == 1:
 				sys.exit()
 			elif self.mode == 2:
-				reactor.stop()
+				os._exit()
 
 		# Draw everything for mode 1
 		if self.mode == 1:
 			self.player.keyHandler()
 			self.ball.move()
+			self.ball.collision(spriteGroup)
 			self.ball.draw()
 			self.player.draw()
 			self.player.goal()
@@ -112,6 +106,8 @@ class gameSpace(object):
 		# Draw everything for mode 2
 		else:
 			self.player.keyHandler()
+			self.ball.move()
+			self.ball.collision(spriteGroup)
 			self.ball.draw()
 			self.player.draw()
 			self.player.goal()
@@ -138,12 +134,50 @@ class gameSpace(object):
 		screen.blit(self.wait, (150, 400))
 
 	# Function receives other player position
-	def update_other(self, data):
-		info = data.split()
-		self.other_rect.x = int(info[0])
-		self.other_rect.y = int(info[1])
-		self.other_score = info[2]
-		self.ball.set_pos(int(info[3]), int(info[4]), float(info[5]))
+	def update(self, data):
+
+		print data
+
+		# If data is P1 message, set to P1
+                if data == "1":
+                        self.set_player(1)
+
+                # If data is P2 message, set to P2
+                elif data == "2":
+                    	print "Caught 2"
+                        self.set_player(2)
+
+                # Begin game if player 2 has connected
+                elif data == "3":
+                    	print "Caught 3"
+                        self.connected()
+
+		else:
+			print "Not caught"
+
+			info = data.split()
+			self.other_rect.x = int(info[0])
+			self.other_rect.y = int(info[1])
+			self.other_score = info[2]
+			self.ball.set_pos(int(info[3]), int(info[4]), float(info[5]))
+
+		self.play()
+
+
+	# Function sets player number, cannot start mode 2 without this
+	def set_player(self, num):
+		print "In set_player function"
+		self.player_num = num
+		if self.player_num == 2:
+			self.connected = 1
+		self.player.set_pos(self.player_num)
+		self.play()
+
+	# Indicates player 2 is connected
+	def connected(self):
+		print "In connected function"
+		self.connected = 1
+		self.play()
 
 	# Function returns current player position
 	def player_pos(self):
@@ -230,6 +264,9 @@ class Player(pygame.sprite.Sprite):
 	# Build player according to image and player num
 	def __init__(self, player_num, img):
 
+		# Init Sprite
+		pygame.sprite.Sprite.__init__(self)
+
 		# Set image variables
 		self.barWidth = 30
 		self.barHeight = 80
@@ -311,6 +348,9 @@ class Computer(pygame.sprite.Sprite):
 	# Set computer player up
 	def __init__(self, diff, img):
 
+		# Init Sprite
+		pygame.sprite.Sprite.__init__(self)
+
 		# Set image variables
 		self.barWidth = 30
 		self.barHeight = 80
@@ -361,6 +401,9 @@ class Ball(pygame.sprite.Sprite):
 
 	# Initialize ball in middle
 	def __init__(self, player, diff, img, computer=None):
+
+		# Init Sprite
+		pygame.sprite.Sprite.__init__(self)
 
 		# Set image variables
 		self.image = pygame.image.load(img)
@@ -442,12 +485,7 @@ class Ball(pygame.sprite.Sprite):
 
 		# If ball collides with one of players, switch direction
 
-#########################################################
-#							#
-#       Chisom I need you to do collisions,		#
-#       Just multiply x by -1 if there is a collision	#
-#	with one of the players. Best way to detect	#
-#	collisions is using the get_position funcs	#
-#	from gs, and checking that against ball pos	#
-#							#
-#########################################################
+	# Collision function detects sprite collision
+	def collision(self, spriteGroup):
+		if pygame.sprite.spritecollide(self, spriteGroup, False):
+			self.Speedx *= -1

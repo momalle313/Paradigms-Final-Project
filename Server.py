@@ -19,15 +19,16 @@ connection_list = []	# Keeps both connections distinct in list
 # Data Connection handlers
 class DataConnection(Protocol):
 
+	# Init makes queue
+	def __init__(self):
+		self.queue = DeferredQueue()
+
 	# Responses for each player when connection is made
 	def connectionMade(self):
 
 		# Declare globals
 		global connection_list
 		global player_num
-
-		# Queue for incoming data
-		self.queue = DeferredQueue()
 
 		# Increment player number
 		player_num += 1
@@ -44,11 +45,9 @@ class DataConnection(Protocol):
 		print "Player " + str(player_num) + " Connected"
 		self.player = player_num
 		self.transport.write(str(player_num))
-		if self.player == 1:
-			self.queue.put("Waiting...")
-			self.queue.get().addCallback(self.forwardData)
 
-		if self.player == 2:
+		# If player 2, tell player 1 you're connected
+		if player_num == 2:
 			connection_list[0].transport.write("3")
 
 	# Handle data received, send to opposite player
@@ -61,13 +60,8 @@ class DataConnection(Protocol):
 	# Begin forwarding process
 	def forwardData(self, data):
 
-		# Check player_num, if less than two, notify player to wait
-		global player_num
-		if player_num < 2:
-			self.transport.write(data)
-
 		# If data is received from player 1, send to player 2
-		elif self.player == 1:
+		if self.player == 1:
 			connection_list[1].transport.write(data)
 			self.queue.get().addCallback(self.forwardData)
 
@@ -93,8 +87,6 @@ class DataConnection(Protocol):
 		elif self.player == 2:
 			self.player = 1
 			connection_list.pop(1)
-			self.transport.write("Other player left game:\n")
-			self.transport.write("You are Player 1")
 
 # Factory for connection
 class DataFactory(Factory):
