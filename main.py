@@ -2,11 +2,12 @@
 
 from twisted.internet.protocol import ClientFactory
 from twisted.internet.protocol import Protocol
-from twisted.internet.defer import DeferredQueue
+#from twisted.internet.defer import DeferredQueue
+from twisted.internet.task import LoopingCall
 from twisted.internet import reactor
+from GamePlay import gameSpace, Player, Computer, Ball, Setup
+from PlayerConnect import DataFactory, DataConnection
 import sys, pygame, math
-import PlayerConnect
-import GamePlay
 
 
 # Global Variable
@@ -18,7 +19,18 @@ HOST = "localhost"	# Can only play if on ash
 
 if __name__ == "__main__":
 
-	# Connect to server, run reactor
-	reactor.connectTCP(HOST, PORT, DataFactory())
-        reactor.run()
+	gs = gameSpace()
+
+
+	# Connect to server, run reactor if 2 player game initiated
+	if gs.get_mode() == 2:
+		reactor.connectTCP(HOST, PORT, DataFactory())
+        	lc = LoopingCall(gs.play())
+		lc.start(.01666)
+		reactor.run()
+	else:
+		clock = pygame.time.Clock()
+		while gs.game_over() == 0:
+			clock.tick(60)
+			gs.play()
 
