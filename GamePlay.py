@@ -104,7 +104,7 @@ class gameSpace(object):
 				self.ball.draw()
 				self.player.draw()
 				self.player.goal()
-				self.computer.move()
+				self.computer.move(self.ball.get_x(), self.ball.get_y())
 				self.computer.draw()
 				self.computer.goal()
 
@@ -141,8 +141,6 @@ class gameSpace(object):
 
 	# Function receives other player position
 	def update(self, data):
-
-		print data
 
 		# If data is P1 message, set to P1
                 if data == "1":
@@ -371,16 +369,52 @@ class Computer(pygame.sprite.Sprite):
 	def draw(self):
 		screen.blit(self.image, self.rect)
 
-#########################################################
-#							#
-#       Chisom I need you to do this function,		#
-#       It needs to follow the follow the ball based	#
-#	on the variable self.difficulty			#
-#							#
-#########################################################
+	def move(self, x, y):
 
-	def move(self):
-		return
+		if self.difficulty == 1:
+			value = randint(0,100) 
+			if value > 50 : 
+				speed = randint(0,9) 
+				self.rect.y += speed
+			else: 
+				speed = randint(0,9) 
+				self.rect.y -= speed
+
+		elif self.difficulty == 2:
+			if (y > self.rect.y) and (x > 500):
+				if (self.rect.y < screenHeight - self.barHeight):
+					self.rect.y += 3;
+				else:
+					if self.rect.y != 360: 
+						self.rect.y -= 3;
+			elif (y > self.rect.y) and (x < 500) : 
+				pass
+			elif (y < self.rect.y) and (x < 500):
+				pass
+			else: 
+				if (self.rect.y > screenHeight - self.barHeight):
+					self.rect.y -= 3;
+				else:
+					if self.rect.y != 360: 
+						self.rect.y != 3;
+		else: 
+			if (y > self.rect.y) and (x > 500):
+				if (self.rect.y < screenHeight - self.barHeight):
+					self.rect.y += 10;
+				else:
+					if self.rect.y != 360: 
+						self.rect.y -= 10;
+			elif (y > self.rect.y) and (x < 500) : 
+				pass
+			elif (y < self.rect.y) and (x < 500):
+				pass
+			else: 
+				if (self.rect.y > screenHeight - self.barHeight):
+					self.rect.y -= 10;
+				else:
+					if self.rect.y != 360: 
+						self.rect.y != 10;
+		return 1
 
 	# Return score
 	def get_score(self):
@@ -430,6 +464,16 @@ class Ball(pygame.sprite.Sprite):
 	def get_full_pos(self):
 		pos = self.play.get_pos()
 		return pos + " " + str(self.rect.x) + " " + str(self.rect.y) + " " + str(self.rad)
+
+	def get_x(self):
+		return self.rect.left
+
+	def get_y(self):
+		return self.rect.y
+
+	def get_rand(self):
+		return str(self.rad)
+
 
 	# Sets ball position from outside input
 	def set_pos(self, x, y, rad):
